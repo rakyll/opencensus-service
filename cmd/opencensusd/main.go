@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Program opencensusd is a deamon that exports
+// Program opencensusd is a deamon that collects OpenCensus stats and traces
+// to export to a configured backend.
 package main
 
 import (
@@ -24,7 +25,7 @@ import (
 	"os/signal"
 	"path/filepath"
 
-	pb "github.com/census-instrumentation/opencensus-proto/gen-go/exportproto"
+	pb "github.com/census-instrumentation/opencensus-proto/gen-go/exporterproto"
 	"github.com/census-instrumentation/opencensus-service/internal"
 	"google.golang.org/grpc"
 )
