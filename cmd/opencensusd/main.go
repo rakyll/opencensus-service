@@ -19,12 +19,10 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
 	"os/signal"
-	"path/filepath"
 
 	pb "github.com/census-instrumentation/opencensus-proto/gen-go/exporterproto"
 	"github.com/census-instrumentation/opencensus-service/internal"
@@ -37,12 +35,12 @@ func main() {
 		log.Fatalf("Cannot listen: %v", err)
 	}
 
-	endpointFile := internal.DefaultEndpointFile()
-	if err := os.MkdirAll(filepath.Dir(endpointFile), 0755); err != nil {
-		log.Fatalf("Cannot make directory for the endpoint file: %v", err)
+	service := &internal.Service{
+		Endpoint: ls.Addr().String(),
 	}
-	if err := ioutil.WriteFile(endpointFile, []byte(ls.Addr().String()), 0777); err != nil {
-		log.Fatalf("Cannot write the endpoint file: %v", err)
+	endpointFile, err := service.WriteToEndpointFile()
+	if err != nil {
+		log.Fatalf("Cannot write to the endpoint file: %v", err)
 	}
 
 	c := make(chan os.Signal, 1)
