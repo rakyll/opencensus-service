@@ -17,6 +17,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -30,7 +31,10 @@ import (
 )
 
 func main() {
-	ls, err := net.Listen("tcp", "127.0.0.1:")
+	listen := flag.String("listen", "127.0.0.1:", "")
+	flag.Parse()
+
+	ls, err := net.Listen("tcp", *listen)
 	if err != nil {
 		log.Fatalf("Cannot listen: %v", err)
 	}
