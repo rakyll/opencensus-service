@@ -17,7 +17,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -30,20 +29,16 @@ import (
 	"github.com/census-instrumentation/opencensus-service/cmd/ocagent/exporter"
 	"github.com/census-instrumentation/opencensus-service/internal"
 	"google.golang.org/grpc"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func main() {
-	listen := flag.String("listen", "127.0.0.1:", "")
-	flag.Parse()
-
-	const configFile = "config.yaml"
-	conf, err := ioutil.ReadFile(configFile)
+	conf, err := readConfig()
 	if err != nil {
-		log.Fatalf("Cannot read the %v file: %v", configFile, err)
+		log.Fatalf("Cannot read or parse the config file: %v", err)
 	}
-	exporter.Parse(conf)
 
-	ls, err := net.Listen("tcp", *listen)
+	ls, err := net.Listen("tcp", conf.Endpoint)
 	if err != nil {
 		log.Fatalf("Cannot listen: %v", err)
 	}
@@ -73,6 +68,26 @@ func main() {
 	if err := s.Serve(ls); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
+}
+
+type config struct {
+	Endpoint  string
+	Exporters interface{}
+}
+
+func readConfig() (*config, error) {
+	const configFile = "config.yaml"
+	confData, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		return nil, err
+	}
+	var c config
+	if err := yaml.Unmarshal(confData, &c); err != nil {
+		return nil, err
+	}
+	exportersData, _ := yaml.Marshal(c.Exporters)
+	exporter.Parse(exportersData)
+	return &c, nil
 }
 
 type server struct{}
